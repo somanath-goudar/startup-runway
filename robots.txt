@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://startup-runway-calc.vercel.app/sitemap.xml
+Sitemap: https://startup-runway-ten.vercel.app/sitemap.xml
