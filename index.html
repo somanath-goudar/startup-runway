@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Startup Runway Calculator — Free Burn Rate & Runway Tool 2025</title>
+<meta name="description" content="Calculate your startup's runway in seconds. Enter cash, burn rate, and MRR growth — see exactly when you run out of money, your break-even date, and a 24-month cash flow chart.">
+<link rel="canonical" href="https://startup-runway-calc.vercel.app/">
+<meta property="og:title" content="Startup Runway Calculator — Free Burn Rate & Runway Tool 2025">
+<meta property="og:description" content="See exactly when your startup runs out of money. Free burn rate calculator with 24-month cash flow chart, break-even date, and shareable link.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://startup-runway-calc.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Startup Runway Calculator 2025 — Free Tool">
+<meta name="twitter:description" content="Cash, burn, MRR growth → exact runway months + break-even date + 24-month chart. Free, instant, no signup.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Startup Runway Calculator",
+  "url": "https://startup-runway-calc.vercel.app/",
+  "description": "Free startup runway calculator. Enter cash balance, monthly burn rate, and MRR growth — get runway in months, break-even date, 24-month cash flow chart, and funding needs calculator.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://startup-runway-calc.vercel.app/" },
+    { "@type": "ListItem", "position": 2, "name": "Startup Runway Calculator", "item": "https://startup-runway-calc.vercel.app/" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do you calculate startup runway?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Startup runway = current cash balance ÷ net monthly burn rate. If you have $500,000 in the bank and burn $50,000/month net, you have 10 months of runway. When you add MRR growth, each month's net burn decreases — so runway extends beyond the simple division. A proper calculation simulates month by month: cash(n) = cash(n-1) - burn + mrr(n), where mrr(n) grows at your monthly MRR growth rate." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a good startup runway?",
+      "acceptedAnswer": { "@type": "Answer", "text": "18–24 months of runway is considered healthy for most startups. It gives you enough time to raise your next round (typically 6–9 months from start to close) while still operating with buffer. Less than 12 months is the danger zone — you should either cut costs or start fundraising immediately. Less than 6 months requires urgent action." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is burn rate for a startup?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Burn rate is how much cash a startup spends per month. Gross burn is total monthly expenses. Net burn is gross burn minus revenue (MRR). If you spend $80,000/month and earn $30,000 MRR, your net burn is $50,000/month. Net burn is what matters for runway calculations — it tells you the actual cash depletion rate." }
+    },
+    {
+      "@type": "Question",
+      "name": "How much should I raise to extend runway?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The standard formula: funding needed = target runway (months) × net monthly burn − current cash. For example, to reach 18 months with $50,000 net burn and $300,000 cash: 18 × 50,000 − 300,000 = $600,000 to raise. Add 20% buffer for deal delays and unexpected costs. Our reverse calculator handles this automatically." }
+    },
+    {
+      "@type": "Question",
+      "name": "When should a startup start fundraising?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Start fundraising when you have 9–12 months of runway remaining. The typical VC fundraising process takes 6–9 months from first pitch to cash in bank. Starting earlier gives you leverage — you're not raising from desperation. If you have less than 6 months, consider bridge financing or emergency cost cuts while running a parallel fundraise." }
+    }
+  ]
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+:root {
+  --primary: #0F4C81;
+  --primary-light: #1A6BB5;
+  --accent: #00B894;
+  --danger: #D63031;
+  --warn: #E17055;
+  --bg: #F0F4F8;
+  --card: #FFFFFF;
+  --border: #D1DCE8;
+  --text: #0D1B2A;
+  --muted: #5A6A7A;
+  --shadow: 0 2px 16px rgba(15,76,129,0.09);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+nav { background: var(--primary); color: #fff; padding: 0.6rem 1.5rem; font-size: 0.8rem; }
+nav a { color: #A8C8F0; text-decoration: none; }
+nav a:hover { color: #fff; }
+nav span { color: #A8C8F0; margin: 0 0.4rem; }
+
+.hero { background: linear-gradient(135deg, #0F4C81 0%, #083564 100%); color: #fff; padding: 3rem 1.5rem 2.5rem; text-align: center; }
+.hero h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.2; margin-bottom: 0.8rem; }
+.hero h1 span { color: #55EFC4; }
+.hero p { font-size: 1.05rem; opacity: 0.9; max-width: 600px; margin: 0 auto 1.5rem; }
+.hero-badges { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 0.3rem 0.9rem; font-size: 0.82rem; }
+
+.main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.card { background: var(--card); border-radius: 16px; box-shadow: var(--shadow); padding: 1.75rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
+.card-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+.card-title .step { background: var(--primary); color: #fff; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+
+/* INPUTS GRID */
+.inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 580px) { .inputs-grid { grid-template-columns: 1fr; } }
+
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field label { font-size: 0.82rem; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+.field .hint { font-size: 0.75rem; color: var(--muted); margin-top: -0.1rem; }
+.input-wrap { position: relative; }
+.input-wrap .prefix { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--muted); font-size: 0.95rem; pointer-events: none; }
+.input-wrap .suffix { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.82rem; color: var(--muted); pointer-events: none; }
+input[type="number"], select {
+  width: 100%; padding: 0.65rem 0.85rem; border: 2px solid var(--border); border-radius: 10px;
+  font-size: 1rem; color: var(--text); background: #fff; outline: none; transition: border-color 0.2s;
+}
+input[type="number"]:focus, select:focus { border-color: var(--primary-light); }
+.has-prefix input { padding-left: 1.9rem; }
+.has-suffix input { padding-right: 2.5rem; }
+.currency-row { display: flex; gap: 0.5rem; }
+.currency-row select { flex: 0 0 80px; }
+.currency-row input { flex: 1; }
+
+/* SCENARIO TABS */
+.scenario-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.tab { padding: 0.4rem 1rem; border-radius: 20px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--muted); transition: all 0.15s; }
+.tab.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+/* RESULT METRICS */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 580px) { .metrics-grid { grid-template-columns: 1fr 1fr; } }
+.metric { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1rem; text-align: center; box-shadow: var(--shadow); }
+.metric.highlight { border-color: var(--accent); background: #F0FDF9; }
+.metric.danger { border-color: var(--danger); background: #FFF5F5; }
+.metric.warn { border-color: var(--warn); background: #FFF8F5; }
+.metric-value { font-size: 1.7rem; font-weight: 900; color: var(--primary); line-height: 1.1; }
+.metric.highlight .metric-value { color: var(--accent); }
+.metric.danger .metric-value { color: var(--danger); }
+.metric.warn .metric-value { color: var(--warn); }
+.metric-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; font-weight: 500; }
+
+/* STATUS BANNER */
+.status-banner { border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 600; font-size: 0.95rem; }
+.status-safe { background: #E8F8F2; border: 1px solid #A8E6CC; color: #1A6B47; }
+.status-warn { background: #FFF3E0; border: 1px solid #FFB74D; color: #8B4500; }
+.status-danger { background: #FFF0F0; border: 1px solid #FFAAAA; color: #8B0000; }
+.status-icon { font-size: 1.3rem; }
+
+/* CHART */
+.chart-container { position: relative; height: 280px; }
+
+/* SENSITIVITY */
+.sensitivity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 580px) { .sensitivity-grid { grid-template-columns: 1fr; } }
+.sens-item { background: #F8FAFE; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+.sens-label { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+.sens-value { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+.sens-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+
+input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: var(--border); outline: none; cursor: pointer; margin-top: 0.6rem; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; box-shadow: 0 2px 6px rgba(15,76,129,0.3); }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; border: none; }
+
+/* REVERSE CALC */
+.reverse-result { background: linear-gradient(135deg, var(--primary), #083564); color: #fff; border-radius: 14px; padding: 1.25rem 1.5rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+.reverse-amount { font-size: 2rem; font-weight: 900; color: #55EFC4; }
+.reverse-label { font-size: 0.85rem; opacity: 0.8; }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.btn { padding: 0.75rem 1.4rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-light); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #00A383; }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background: #EEF4FB; }
+.share-url { width: 100%; padding: 0.6rem 0.85rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.82rem; color: var(--muted); margin-top: 0.75rem; font-family: monospace; cursor: text; }
+
+/* HOW IT WORKS */
+.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.how-item { text-align: center; padding: 1.25rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: #F8FAFE; }
+.how-num { width: 38px; height: 38px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; margin: 0 auto 0.6rem; }
+.how-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.35rem; }
+.how-desc { font-size: 0.8rem; color: var(--muted); }
+
+/* FAQ */
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q { width: 100%; text-align: left; background: none; border: none; padding: 1rem 0; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
+.faq-q::after { content: '+'; font-size: 1.3rem; color: var(--primary); }
+.faq-q.open::after { content: '−'; }
+.faq-a { display: none; padding: 0 0 1rem; font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+.faq-a.open { display: block; }
+
+footer { background: #0D1B2A; color: #6A8AA0; text-align: center; padding: 1.5rem; font-size: 0.82rem; }
+footer a { color: #8AACC0; text-decoration: none; margin: 0 0.5rem; }
+footer a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/">Home</a><span>›</span><strong>Startup Runway Calculator</strong>
+</nav>
+
+<div class="hero">
+  <h1>Startup <span>Runway Calculator</span></h1>
+  <p>Cash, burn, and MRR growth — see exactly when you run out of money, when you break even, and how much to raise.</p>
+  <div class="hero-badges">
+    <span class="badge">📊 24-month chart</span>
+    <span class="badge">⚡ Instant results</span>
+    <span class="badge">💰 Fundraising calc</span>
+    <span class="badge">🔗 Shareable link</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- INPUTS -->
+  <div class="card">
+    <div class="card-title"><span class="step">1</span> Your Numbers</div>
+    <div class="inputs-grid">
+
+      <div class="field">
+        <label>Currency</label>
+        <div class="currency-row">
+          <select id="currency" onchange="recalc()">
+            <option value="$">$ USD</option>
+            <option value="€">€ EUR</option>
+            <option value="£">£ GBP</option>
+            <option value="₹">₹ INR</option>
+            <option value="$" data-sym="A$">A$ AUD</option>
+            <option value="C$">C$ CAD</option>
+            <option value="S$">S$ SGD</option>
+          </select>
+        </div>
+        <div class="hint">Symbol shown in results</div>
+      </div>
+
+      <div class="field">
+        <label>Current Cash Balance</label>
+        <div class="input-wrap has-prefix">
+          <span class="prefix" id="pfxCash">$</span>
+          <input type="number" id="cash" value="500000" min="0" step="10000" oninput="recalc()">
+        </div>
+        <div class="hint">Total cash in bank right now</div>
+      </div>
+
+      <div class="field">
+        <label>Monthly Gross Burn</label>
+        <div class="input-wrap has-prefix">
+          <span class="prefix" id="pfxBurn">$</span>
+          <input type="number" id="burn" value="50000" min="0" step="1000" oninput="recalc()">
+        </div>
+        <div class="hint">Total monthly expenses (salaries, infra, etc.)</div>
+      </div>
+
+      <div class="field">
+        <label>Current MRR</label>
+        <div class="input-wrap has-prefix">
+          <span class="prefix" id="pfxMrr">$</span>
+          <input type="number" id="mrr" value="15000" min="0" step="1000" oninput="recalc()">
+        </div>
+        <div class="hint">Monthly Recurring Revenue today (0 if pre-revenue)</div>
+      </div>
+
+      <div class="field">
+        <label>MRR Growth Rate</label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="mrrGrowth" value="8" min="0" max="100" step="0.5" oninput="recalc()">
+          <span class="suffix">% / mo</span>
+        </div>
+        <div class="hint">Monthly % MRR growth (e.g. 8 = 8%/month)</div>
+      </div>
+
+      <div class="field">
+        <label>Projection Period</label>
+        <div class="input-wrap">
+          <select id="months" onchange="recalc()">
+            <option value="12">12 months</option>
+            <option value="24" selected>24 months</option>
+            <option value="36">36 months</option>
+          </select>
+        </div>
+        <div class="hint">How far ahead to project</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="statusBanner" class="status-banner status-safe">
+    <span class="status-icon">✅</span>
+    <span id="statusText">Calculating…</span>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric highlight" id="metricRunway">
+      <div class="metric-value" id="runwayVal">—</div>
+      <div class="metric-label">Months of Runway</div>
+    </div>
+    <div class="metric" id="metricBreakeven">
+      <div class="metric-value" id="breakevenVal">—</div>
+      <div class="metric-label">Break-even Date</div>
+    </div>
+    <div class="metric" id="metricNetBurn">
+      <div class="metric-value" id="netBurnVal">—</div>
+      <div class="metric-label">Current Net Burn / mo</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" id="annualBurnVal">—</div>
+      <div class="metric-label">Annual Burn Rate</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" id="peakMrrVal">—</div>
+      <div class="metric-label">MRR at End of Period</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" id="fundraiseDeadlineVal">—</div>
+      <div class="metric-label">Start Fundraising By</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <div class="card-title"><span class="step">2</span> Cash Flow Projection
+      <div class="scenario-tabs" style="margin-left:auto;margin-bottom:0;">
+        <button class="tab active" onclick="setScenario('base',this)">Base</button>
+        <button class="tab" onclick="setScenario('optimistic',this)">Optimistic</button>
+        <button class="tab" onclick="setScenario('pessimistic',this)">Pessimistic</button>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="cashChart"></canvas>
+    </div>
+    <p style="font-size:0.77rem;color:var(--muted);margin-top:0.6rem;text-align:center;">
+      Optimistic: +50% MRR growth, −10% burn &nbsp;|&nbsp; Pessimistic: −50% MRR growth, +20% burn
+    </p>
+  </div>
+
+  <!-- SENSITIVITY -->
+  <div class="card">
+    <div class="card-title"><span class="step">3</span> Sensitivity — What If?</div>
+    <div class="sensitivity-grid">
+      <div class="sens-item">
+        <div class="sens-label">Cut monthly burn by <span id="burnCutPct">20</span>%</div>
+        <input type="range" id="burnCutSlider" min="5" max="50" step="5" value="20" oninput="updateSensitivity()">
+        <div class="sens-value" id="burnCutResult">—</div>
+        <div class="sens-sub" id="burnCutSub">months of runway</div>
+      </div>
+      <div class="sens-item">
+        <div class="sens-label">Boost MRR growth to <span id="mrrBoostPct">15</span>%/mo</div>
+        <input type="range" id="mrrBoostSlider" min="5" max="50" step="5" value="15" oninput="updateSensitivity()">
+        <div class="sens-value" id="mrrBoostResult">—</div>
+        <div class="sens-sub" id="mrrBoostSub">months of runway</div>
+      </div>
+      <div class="sens-item">
+        <div class="sens-label">Inject additional capital</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;">
+          <span id="injectPfx" style="font-weight:700;color:var(--muted);">$</span>
+          <input type="number" id="injectCapital" value="200000" min="0" step="10000" oninput="updateSensitivity()" style="flex:1;padding:0.4rem 0.5rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;">
+        </div>
+        <div class="sens-value" style="margin-top:0.5rem;" id="injectResult">—</div>
+        <div class="sens-sub" id="injectSub">months of runway</div>
+      </div>
+      <div class="sens-item">
+        <div class="sens-label">Add key hire (monthly cost)</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;">
+          <span id="hirePfx" style="font-weight:700;color:var(--muted);">$</span>
+          <input type="number" id="hireCost" value="10000" min="0" step="1000" oninput="updateSensitivity()" style="flex:1;padding:0.4rem 0.5rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;">
+        </div>
+        <div class="sens-value" style="margin-top:0.5rem;" id="hireResult">—</div>
+        <div class="sens-sub" id="hireSub">months of runway</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVERSE CALC -->
+  <div class="card">
+    <div class="card-title"><span class="step">4</span> How Much to Raise?</div>
+    <p style="font-size:0.87rem;color:var(--muted);margin-bottom:1rem;">Enter your target runway — we'll tell you exactly how much to raise.</p>
+    <div class="inputs-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="field">
+        <label>Target Runway (months)</label>
+        <input type="number" id="targetRunway" value="18" min="3" max="60" step="1" oninput="recalcReverse()">
+      </div>
+      <div class="field">
+        <label>Buffer %</label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="bufferPct" value="20" min="0" max="50" step="5" oninput="recalcReverse()">
+          <span class="suffix">%</span>
+        </div>
+        <div class="hint">Safety margin on top of base need</div>
+      </div>
+    </div>
+    <div class="reverse-result">
+      <div>
+        <div class="reverse-label">Raise at least</div>
+        <div class="reverse-amount" id="raiseAmount">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="reverse-label">Extends runway to</div>
+        <div style="font-size:1.1rem;font-weight:800;" id="raiseRunway">—</div>
+        <div class="reverse-label" id="raiseBreakeven"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE -->
+  <div class="card">
+    <div class="card-title"><span class="step">5</span> Save & Share</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="exportPDF()">📄 Export PDF</button>
+      <button class="btn btn-accent" onclick="generateShareLink()">🔗 Copy Share Link</button>
+      <button class="btn btn-outline" onclick="resetAll()">↺ Reset</button>
+    </div>
+    <input type="text" class="share-url" id="shareUrl" readonly placeholder="Click 'Copy Share Link' to generate…" onclick="this.select()">
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card">
+    <div class="card-title">How It Works</div>
+    <div class="how-grid">
+      <div class="how-item"><div class="how-num">1</div><div class="how-title">Enter Your Numbers</div><div class="how-desc">Cash, burn rate, current MRR, and MRR growth rate.</div></div>
+      <div class="how-item"><div class="how-num">2</div><div class="how-title">See Your Runway</div><div class="how-desc">Month-by-month simulation shows exact cash-out and break-even dates.</div></div>
+      <div class="how-item"><div class="how-num">3</div><div class="how-title">Model Scenarios</div><div class="how-desc">Toggle optimistic / pessimistic. Drag sensitivity sliders to see trade-offs.</div></div>
+      <div class="how-item"><div class="how-num">4</div><div class="how-title">Know What to Raise</div><div class="how-desc">Set a target runway → get the exact fundraising amount needed.</div></div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="card">
+    <div class="card-title">Frequently Asked Questions</div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How do you calculate startup runway?</button><div class="faq-a">Startup runway = current cash balance ÷ net monthly burn. If you have $500K and burn $50K/month net, you have 10 months. When MRR grows, net burn decreases each month — so proper runway simulates month by month: cash(n) = cash(n-1) − burn + mrr(n), where MRR compounds at your growth rate.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What is a good startup runway?</button><div class="faq-a">18–24 months is considered healthy. It gives you enough time to raise your next round (6–9 months process) with buffer remaining. Less than 12 months is the danger zone — start cutting costs or fundraising immediately. Less than 6 months requires emergency action.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What is net burn rate?</button><div class="faq-a">Net burn = gross monthly expenses − monthly revenue (MRR). If you spend $80K/month and earn $30K MRR, your net burn is $50K/month. This is what determines your actual runway. Gross burn ignores revenue and overstates how fast you're depleting cash.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How much should I raise to extend runway?</button><div class="faq-a">Funding needed = (target months × net burn) − current cash. E.g. for 18 months at $50K net burn with $300K cash: 18 × $50K − $300K = $600K. Always add 20% buffer for delays. Our reverse calculator above handles this automatically.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">When should a startup start fundraising?</button><div class="faq-a">Start when you have 9–12 months of runway left. The typical VC process takes 6–9 months from first pitch to cash in bank. Starting with more runway gives you leverage — you're not raising from desperation. The "Fundraise By" date in your results above marks this threshold.</div></div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 Startup Runway Calculator — Free tool, no signup required. Not financial advice.</p>
+  <p style="margin-top:0.5rem;"><a href="/privacy.html">Privacy Policy</a> <a href="/terms.html">Terms of Use</a></p>
+</footer>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let chart = null;
+let scenario = 'base';
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function sym() {
+  const el = document.getElementById('currency');
+  return el ? el.value : '$';
+}
+
+function fmt(n, compact) {
+  const s = sym();
+  if (n === null || isNaN(n)) return '∞';
+  const abs = Math.abs(n);
+  let str;
+  if (compact) {
+    if (abs >= 1000000) str = (n / 1000000).toFixed(1) + 'M';
+    else if (abs >= 1000) str = (n / 1000).toFixed(0) + 'K';
+    else str = Math.round(n).toString();
+  } else {
+    str = Math.round(n).toLocaleString();
+  }
+  return s + (n < 0 ? '-' : '') + str.replace('-', '');
+}
+
+function addMonths(date, m) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + m);
+  return d;
+}
+
+function monthLabel(offset) {
+  const d = addMonths(new Date(), offset);
+  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+}
+
+function getInputs() {
+  const cash = parseFloat(document.getElementById('cash')?.value) || 0;
+  const burn = parseFloat(document.getElementById('burn')?.value) || 0;
+  const mrr  = parseFloat(document.getElementById('mrr')?.value)  || 0;
+  const mrrGrowth = (parseFloat(document.getElementById('mrrGrowth')?.value) || 0) / 100;
+  const months = parseInt(document.getElementById('months')?.value) || 24;
+  return { cash, burn, mrr, mrrGrowth, months };
+}
+
+// Simulate month-by-month cash flow
+function simulate(cash, burn, mrr, mrrGrowth, periods) {
+  const cashArr = [cash];
+  const mrrArr  = [mrr];
+  let runwayMonth = null;
+  let breakevenMonth = null;
+  let currentMrr = mrr;
+  let currentCash = cash;
+
+  for (let m = 1; m <= periods; m++) {
+    currentMrr = currentMrr * (1 + mrrGrowth);
+    const netBurn = burn - currentMrr;
+    currentCash = currentCash - netBurn;
+    cashArr.push(currentCash);
+    mrrArr.push(currentMrr);
+
+    if (runwayMonth === null && currentCash <= 0) runwayMonth = m;
+    if (breakevenMonth === null && currentMrr >= burn) breakevenMonth = m;
+  }
+
+  return { cashArr, mrrArr, runwayMonth, breakevenMonth };
+}
+
+// ─── MAIN RECALC ─────────────────────────────────────────────────────────────
+function recalc() {
+  const { cash, burn, mrr, mrrGrowth, months } = getInputs();
+  const s = sym();
+
+  // Update currency prefix spans
+  ['pfxCash','pfxBurn','pfxMrr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = s;
+  });
+  ['injectPfx','hirePfx'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = s;
+  });
+
+  const netBurn = Math.max(0, burn - mrr);
+  const { cashArr, mrrArr, runwayMonth, breakevenMonth } = simulate(cash, burn, mrr, mrrGrowth, months);
+
+  // Metrics
+  const runwayEl = document.getElementById('runwayVal');
+  const runwayDisplay = runwayMonth !== null ? runwayMonth + ' mo' : months + '+ mo';
+  if (runwayEl) runwayEl.textContent = runwayDisplay;
+
+  const metricRunway = document.getElementById('metricRunway');
+  if (metricRunway) {
+    metricRunway.classList.toggle('highlight', runwayMonth === null || runwayMonth > 12);
+    metricRunway.classList.toggle('warn', runwayMonth !== null && runwayMonth <= 12 && runwayMonth > 6);
+    metricRunway.classList.toggle('danger', runwayMonth !== null && runwayMonth <= 6);
+  }
+
+  const beEl = document.getElementById('breakevenVal');
+  if (beEl) beEl.textContent = breakevenMonth !== null ? monthLabel(breakevenMonth) : months + '+ mo';
+
+  const nbEl = document.getElementById('netBurnVal');
+  if (nbEl) nbEl.textContent = fmt(netBurn, true) + '/mo';
+
+  const abEl = document.getElementById('annualBurnVal');
+  if (abEl) abEl.textContent = fmt(netBurn * 12, true);
+
+  const peakMrr = mrrArr[mrrArr.length - 1];
+  const pmEl = document.getElementById('peakMrrVal');
+  if (pmEl) pmEl.textContent = fmt(peakMrr, true) + '/mo';
+
+  // Fundraise by = 9 months before cash-out
+  const fundraiseDeadlineEl = document.getElementById('fundraiseDeadlineVal');
+  if (fundraiseDeadlineEl) {
+    if (runwayMonth !== null && runwayMonth > 9) {
+      fundraiseDeadlineEl.textContent = monthLabel(runwayMonth - 9);
+    } else if (runwayMonth !== null) {
+      fundraiseDeadlineEl.textContent = 'Now';
+    } else {
+      fundraiseDeadlineEl.textContent = months + '+ mo';
+    }
+  }
+
+  // Status banner
+  const banner = document.getElementById('statusBanner');
+  const statusText = document.getElementById('statusText');
+  if (banner && statusText) {
+    banner.className = 'status-banner';
+    if (runwayMonth === null) {
+      banner.classList.add('status-safe');
+      document.querySelector('#statusBanner .status-icon').textContent = '✅';
+      statusText.textContent = `You have ${months}+ months of runway. MRR breaks even ${breakevenMonth !== null ? 'in ' + monthLabel(breakevenMonth) : 'within the period'}.`;
+    } else if (runwayMonth <= 6) {
+      banner.classList.add('status-danger');
+      document.querySelector('#statusBanner .status-icon').textContent = '🚨';
+      statusText.textContent = `Danger: only ${runwayMonth} months of runway. Cut costs or raise capital urgently.`;
+    } else if (runwayMonth <= 12) {
+      banner.classList.add('status-warn');
+      document.querySelector('#statusBanner .status-icon').textContent = '⚠️';
+      statusText.textContent = `${runwayMonth} months of runway — start fundraising now (process takes 6–9 months).`;
+    } else {
+      banner.classList.add('status-safe');
+      document.querySelector('#statusBanner .status-icon').textContent = '✅';
+      statusText.textContent = `${runwayMonth} months of runway. Consider raising when you hit 12 months remaining.`;
+    }
+  }
+
+  updateChart(cashArr, mrrArr, months);
+  updateSensitivity();
+  recalcReverse();
+}
+
+// ─── CHART ───────────────────────────────────────────────────────────────────
+function buildScenarioCash(scenarioKey) {
+  let { cash, burn, mrr, mrrGrowth, months } = getInputs();
+  if (scenarioKey === 'optimistic') { mrrGrowth *= 1.5; burn *= 0.9; }
+  if (scenarioKey === 'pessimistic') { mrrGrowth *= 0.5; burn *= 1.2; }
+  const { cashArr } = simulate(cash, burn, mrr, mrrGrowth, months);
+  return cashArr;
+}
+
+function updateChart(cashArr, mrrArr, months) {
+  const labels = Array.from({ length: months + 1 }, (_, i) => monthLabel(i));
+  const ctx = document.getElementById('cashChart');
+  if (!ctx) return;
+
+  const optimistic = buildScenarioCash('optimistic');
+  const pessimistic = buildScenarioCash('pessimistic');
+
+  const datasets = [
+    {
+      label: 'Cash (Base)',
+      data: cashArr.map(v => Math.round(v)),
+      borderColor: '#0F4C81',
+      backgroundColor: 'rgba(15,76,129,0.08)',
+      fill: true,
+      tension: 0.3,
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+    },
+    {
+      label: 'MRR',
+      data: mrrArr.map(v => Math.round(v)),
+      borderColor: '#00B894',
+      borderDash: [5, 3],
+      fill: false,
+      tension: 0.3,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+    },
+    {
+      label: 'Cash (Optimistic)',
+      data: optimistic.map(v => Math.round(v)),
+      borderColor: 'rgba(0,184,148,0.5)',
+      fill: false,
+      tension: 0.3,
+      borderWidth: 1.5,
+      borderDash: [3, 3],
+      pointRadius: 0,
+      hidden: scenario !== 'optimistic',
+    },
+    {
+      label: 'Cash (Pessimistic)',
+      data: pessimistic.map(v => Math.round(v)),
+      borderColor: 'rgba(214,48,49,0.5)',
+      fill: false,
+      tension: 0.3,
+      borderWidth: 1.5,
+      borderDash: [3, 3],
+      pointRadius: 0,
+      hidden: scenario !== 'pessimistic',
+    },
+  ];
+
+  const zeroLine = {
+    id: 'zeroLine',
+    beforeDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      if (!chartArea) return;
+      const y0 = scales.y.getPixelForValue(0);
+      if (y0 < chartArea.top || y0 > chartArea.bottom) return;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(214,48,49,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(chartArea.left, y0);
+      ctx.lineTo(chartArea.right, y0);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  if (chart) {
+    chart.data.labels = labels;
+    chart.data.datasets = datasets;
+    chart.update();
+  } else {
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      plugins: [zeroLine],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 }, color: '#5A6A7A' } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}`
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { font: { size: 10 }, color: '#5A6A7A', maxTicksLimit: 12 }, grid: { display: false } },
+          y: { ticks: { font: { size: 10 }, color: '#5A6A7A', callback: v => fmt(v, true) }, grid: { color: '#EDF2F7' } }
+        }
+      }
+    });
+  }
+}
+
+function setScenario(s, el) {
+  scenario = s;
+  document.querySelectorAll('.scenario-tabs .tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (!chart) return;
+  chart.data.datasets[2].hidden = (s !== 'optimistic');
+  chart.data.datasets[3].hidden = (s !== 'pessimistic');
+  chart.update();
+}
+
+// ─── SENSITIVITY ─────────────────────────────────────────────────────────────
+function simRunway(cash, burn, mrr, mrrGrowth, periods) {
+  const { runwayMonth } = simulate(cash, burn, mrr, mrrGrowth, periods);
+  return runwayMonth !== null ? runwayMonth : periods + 1;
+}
+
+function updateSensitivity() {
+  const { cash, burn, mrr, mrrGrowth, months } = getInputs();
+  const base = simRunway(cash, burn, mrr, mrrGrowth, months);
+
+  // Burn cut
+  const burnCutPct = parseFloat(document.getElementById('burnCutSlider')?.value) || 20;
+  const el1 = document.getElementById('burnCutPct');
+  if (el1) el1.textContent = burnCutPct;
+  const burnCutResult = simRunway(cash, burn * (1 - burnCutPct / 100), mrr, mrrGrowth, months);
+  const bc = document.getElementById('burnCutResult');
+  const bcs = document.getElementById('burnCutSub');
+  if (bc) bc.textContent = burnCutResult > months ? months + '+' : burnCutResult;
+  if (bcs) {
+    const diff = burnCutResult - base;
+    bcs.textContent = diff > 0 ? `+${diff} months vs current` : 'months of runway';
+  }
+
+  // MRR boost
+  const mrrBoostPct = parseFloat(document.getElementById('mrrBoostSlider')?.value) || 15;
+  const el2 = document.getElementById('mrrBoostPct');
+  if (el2) el2.textContent = mrrBoostPct;
+  const mrrBoostResult = simRunway(cash, burn, mrr, mrrBoostPct / 100, months);
+  const mb = document.getElementById('mrrBoostResult');
+  const mbs = document.getElementById('mrrBoostSub');
+  if (mb) mb.textContent = mrrBoostResult > months ? months + '+' : mrrBoostResult;
+  if (mbs) {
+    const diff = mrrBoostResult - base;
+    mbs.textContent = diff > 0 ? `+${diff} months vs current` : 'months of runway';
+  }
+
+  // Capital injection
+  const inject = parseFloat(document.getElementById('injectCapital')?.value) || 0;
+  const injectResult = simRunway(cash + inject, burn, mrr, mrrGrowth, months);
+  const ir = document.getElementById('injectResult');
+  const is_ = document.getElementById('injectSub');
+  if (ir) ir.textContent = injectResult > months ? months + '+' : injectResult;
+  if (is_) {
+    const diff = injectResult - base;
+    is_.textContent = diff > 0 ? `+${diff} months vs current` : 'months of runway';
+  }
+
+  // Key hire
+  const hireCost = parseFloat(document.getElementById('hireCost')?.value) || 0;
+  const hireResult = simRunway(cash, burn + hireCost, mrr, mrrGrowth, months);
+  const hr = document.getElementById('hireResult');
+  const hs = document.getElementById('hireSub');
+  if (hr) hr.textContent = hireResult > months ? months + '+' : (hireResult === 0 ? '< 1' : hireResult);
+  if (hs) {
+    const diff = hireResult - base;
+    hs.textContent = diff < 0 ? `${diff} months vs current` : 'months of runway';
+  }
+}
+
+// ─── REVERSE CALC ────────────────────────────────────────────────────────────
+function recalcReverse() {
+  const { cash, burn, mrr, mrrGrowth, months } = getInputs();
+  const targetMonths = parseInt(document.getElementById('targetRunway')?.value) || 18;
+  const buffer = (parseFloat(document.getElementById('bufferPct')?.value) || 20) / 100;
+  const netBurn = Math.max(0, burn - mrr);
+  const baseNeed = Math.max(0, (targetMonths * netBurn) - cash);
+  const withBuffer = Math.round(baseNeed * (1 + buffer));
+
+  const ra = document.getElementById('raiseAmount');
+  if (ra) ra.textContent = fmt(withBuffer);
+
+  const postCash = cash + withBuffer;
+  const { runwayMonth: newRunway, breakevenMonth } = simulate(postCash, burn, mrr, mrrGrowth, 60);
+  const rr = document.getElementById('raiseRunway');
+  if (rr) rr.textContent = newRunway !== null ? newRunway + ' months' : '60+ months';
+  const rb = document.getElementById('raiseBreakeven');
+  if (rb) rb.textContent = breakevenMonth !== null ? `Break-even: ${monthLabel(breakevenMonth)}` : '';
+}
+
+// ─── FAQ ─────────────────────────────────────────────────────────────────────
+function toggleFaq(btn) {
+  const ans = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.faq-q.open').forEach(b => { b.classList.remove('open'); b.nextElementSibling.classList.remove('open'); });
+  if (!isOpen) { btn.classList.add('open'); ans.classList.add('open'); }
+}
+
+// ─── PDF EXPORT ───────────────────────────────────────────────────────────────
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const { cash, burn, mrr, mrrGrowth, months } = getInputs();
+  const netBurn = Math.max(0, burn - mrr);
+  const { runwayMonth, breakevenMonth } = simulate(cash, burn, mrr, mrrGrowth, months);
+  const s = sym();
+
+  doc.setFillColor(15, 76, 129);
+  doc.rect(0, 0, 210, 35, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont(undefined, 'bold');
+  doc.text('Startup Runway Report', 105, 14, { align: 'center' });
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, 105, 24, { align: 'center' });
+
+  doc.setTextColor(30, 30, 30);
+  let y = 46;
+  const rows = [
+    ['Cash Balance', s + cash.toLocaleString()],
+    ['Monthly Gross Burn', s + burn.toLocaleString()],
+    ['Current MRR', s + mrr.toLocaleString()],
+    ['MRR Growth Rate', (mrrGrowth * 100).toFixed(1) + '%/month'],
+    ['Net Burn / Month', s + netBurn.toLocaleString()],
+    ['Annual Burn Rate', s + (netBurn * 12).toLocaleString()],
+    ['Runway', runwayMonth !== null ? runwayMonth + ' months' : months + '+ months'],
+    ['Break-even Date', breakevenMonth !== null ? monthLabel(breakevenMonth) : months + '+ months'],
+    ['Fundraise By', runwayMonth !== null && runwayMonth > 9 ? monthLabel(runwayMonth - 9) : 'Now'],
+  ];
+  doc.setFontSize(10);
+  rows.forEach(([k, v]) => {
+    doc.setFont(undefined, 'bold'); doc.text(k, 20, y);
+    doc.setFont(undefined, 'normal'); doc.text(v, 120, y);
+    doc.line(20, y + 2, 190, y + 2);
+    doc.setDrawColor(220, 225, 230);
+    y += 10;
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Generated by startup-runway-calc.vercel.app — Not financial advice.', 105, 287, { align: 'center' });
+  doc.save('startup-runway-report.pdf');
+}
+
+// ─── SHARE ────────────────────────────────────────────────────────────────────
+function generateShareLink() {
+  const { cash, burn, mrr, mrrGrowth, months } = getInputs();
+  const state = { cash, burn, mrr, g: Math.round(mrrGrowth * 100 * 10) / 10, months, c: sym() };
+  const hash = btoa(JSON.stringify(state));
+  const url = window.location.href.split('#')[0] + '#' + hash;
+  const el = document.getElementById('shareUrl');
+  if (el) {
+    el.value = url;
+    el.select();
+    navigator.clipboard.writeText(url).then(() => {
+      el.value = '✅ Copied! ' + url;
+      setTimeout(() => { el.value = url; }, 2500);
+    }).catch(() => {});
+  }
+}
+
+function loadFromHash() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return;
+  try {
+    const s = JSON.parse(atob(hash));
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+    set('cash', s.cash);
+    set('burn', s.burn);
+    set('mrr', s.mrr);
+    set('mrrGrowth', s.g);
+    set('months', s.months);
+    if (s.c) {
+      const sel = document.getElementById('currency');
+      if (sel) { for (const opt of sel.options) { if (opt.value === s.c) { opt.selected = true; break; } } }
+    }
+  } catch(e) {}
+}
+
+function resetAll() {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('cash', 500000); set('burn', 50000); set('mrr', 15000);
+  set('mrrGrowth', 8); set('months', 24);
+  document.getElementById('currency').value = '$';
+  window.location.hash = '';
+  recalc();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromHash();
+  recalc();
+});
+</script>
+</body>
+</html>
